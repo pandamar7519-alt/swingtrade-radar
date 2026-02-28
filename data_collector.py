@@ -3,13 +3,16 @@ import yfinance as yf
 import pandas as pd
 
 def get_stock_data(ticker):
+    """
+    Baixa dados históricos da ação
+    """
     try:
-        df = yf.download(ticker, period="1y", interval="1d", progress=False)
+        df = yf.download(ticker, period="1y", interval="1d", progress=False, timeout=10)
         
         if df is None or df.empty:
             return None
         
-        # ✅ CORREÇÃO: Lida com MultiIndex do yfinance
+        # Lida com MultiIndex do yfinance (versões novas)
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.droplevel(1)
         
@@ -21,12 +24,15 @@ def get_stock_data(ticker):
         
         df = df[cols_necessarias]
         
-        # ✅ Limpeza suave: só remove se Close for NaN
+        # Limpeza suave: só remove se Close for NaN
         df = df[df["Close"].notna()]
         
         # Garante tipos numéricos
         df["Volume"] = pd.to_numeric(df["Volume"], errors='coerce').fillna(0)
         df["Close"] = pd.to_numeric(df["Close"], errors='coerce')
+        df["Open"] = pd.to_numeric(df["Open"], errors='coerce')
+        df["High"] = pd.to_numeric(df["High"], errors='coerce')
+        df["Low"] = pd.to_numeric(df["Low"], errors='coerce')
         
         return df
         
@@ -35,6 +41,9 @@ def get_stock_data(ticker):
         return None
 
 def get_fundamentals(ticker):
+    """
+    Busca dados fundamentalistas da ação
+    """
     try:
         stock = yf.Ticker(ticker)
         info = stock.info
