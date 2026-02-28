@@ -4,7 +4,7 @@ from data_collector import get_stock_data, get_fundamentals
 from indicators import add_indicators
 from scoring import calculate_score
 
-# Lista PEQUENA para não timeout (apenas 10 ações)
+# Lista de ações para o scanner (10 ações para não timeout)
 LIQUID_STOCKS = [
     "PETR4.SA",
     "VALE3.SA",
@@ -19,6 +19,9 @@ LIQUID_STOCKS = [
 ]
 
 def run_scanner(max_results=10):
+    """
+    Scanner completo com score e fundamentos
+    """
     results = []
     
     for ticker in LIQUID_STOCKS[:max_results]:
@@ -28,19 +31,39 @@ def run_scanner(max_results=10):
             if df is None or len(df) < 50:
                 continue
             
+            # Filtro de volume mínimo
+            volume_medio = df["Volume"].tail(20).mean()
+            if volume_medio < 100_000:
+                continue
+            
+            # Adiciona indicadores
             df = add_indicators(df)
+            
+            # Busca fundamentos
             fundamentals = get_fundamentals(ticker)
-            score = calculate_score(df, fundamentals)
+            
+            # ✅ CORREÇÃO: calculate_score agora retorna (score, detalhes)
+            score, _ = calculate_score(df, fundamentals)
+            
+            # Preço atual
+            preco_atual = float(df["Close"].iloc[-1])
             
             results.append({
                 "Ticker": ticker,
-                "Preço": round(float(df["Close"].iloc[-1]), 2),
-                "Score": score
+                "Preço": round(preco_atual, 2),
+                "Score": score,
+                "Volume Médio": int(volume_medio)
             })
-        except:
+            
+        except Exception as e:
+            print(f"Erro em {ticker}: {e}")
             continue
     
     if not results:
-        return pd.DataFrame({"Mensagem": ["Nenhuma ação encontrada."]})
+        return pd.DataFrame({"Mensagem": ["Nenhuma ação passou nos filtros."]})
     
-    return pd.DataFrame(results).sort_values("Score", ascending=False)
+    # Ordena por score (maior para menor)
+    df_results = pd.DataFrame(results)
+    df_results = df_results.sort_values(by="Score", ascending=False)
+    
+    return df_results.reset_index(drop=True)
