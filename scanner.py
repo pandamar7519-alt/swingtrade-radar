@@ -5,24 +5,34 @@ TICKERS = [
 ]
 def run_scanner():
 
-    import yfinance as yf
-    import pandas as pd
-
     results = []
 
     for ticker in TICKERS:
 
         try:
-            df = yf.download(ticker, period="6mo", interval="1d", progress=False)
+            df = get_stock_data(ticker)
 
-            if df is None or df.empty:
+            if df is None or len(df) < 100:
                 continue
+
+            df = add_indicators(df)
+
+            volume_medio = df["Volume"].tail(20).mean()
+
+            if volume_medio < 200_000:
+                continue
+
+            fundamentals = get_fundamentals(ticker)
+
+            score = calculate_score(df, fundamentals)
 
             current_price = float(df["Close"].iloc[-1])
 
             results.append({
                 "Ticker": ticker,
                 "Preço Atual": round(current_price, 2),
+                "Volume Médio 20d": int(volume_medio),
+                "Score": round(score, 2)
             })
 
         except Exception:
@@ -30,8 +40,10 @@ def run_scanner():
 
     if len(results) == 0:
         return pd.DataFrame(
-            {"Mensagem": ["Nenhum dado retornado pelo Yahoo Finance."]}
+            {"Mensagem": ["Nenhuma ação passou nos filtros."]}
         )
 
-    return pd.DataFrame(results)
+    ranking = pd.DataFrame(results)
+    ranking = ranking.sort_values(by="Score", ascending=False).reset_index(drop=True)
 
+    return ranking.head(10)
