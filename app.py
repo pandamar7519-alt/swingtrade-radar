@@ -1,4 +1,5 @@
-﻿import streamlit as st
+from scanner import run_scanner
+import streamlit as st
 from data_collector import get_stock_data, get_fundamentals
 from indicators import add_indicators
 from scoring import calculate_score
@@ -26,4 +27,5 @@ if st.button("Analisar"):
         else:
             st.warning("🔴 Baixa pontuação para Swing Trade")
     else:
+
         st.error("Ação acima de R$20 ou sem dados.")
