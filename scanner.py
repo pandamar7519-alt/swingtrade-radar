@@ -24,8 +24,9 @@ def run_scanner():
                 "Score": score
             })
 
-        except Exception:
-            continue
+        except Exception as e:
+    print(f"Erro em {ticker}: {e}")
+    continue
 
     # 🔥 proteção contra lista vazia
     if len(results) == 0:
@@ -35,3 +36,4 @@ def run_scanner():
     ranking = ranking.sort_values(by="Score", ascending=False)
 
     return ranking.head(10)
+
