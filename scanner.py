@@ -4,7 +4,7 @@ from data_collector import get_stock_data, get_fundamentals
 from indicators import add_indicators
 from scoring import calculate_score
 
-# Lista reduzida para evitar timeout no Streamlit Cloud
+# Lista PEQUENA para não timeout (apenas 10 ações)
 LIQUID_STOCKS = [
     "PETR4.SA",
     "VALE3.SA",
@@ -15,72 +15,32 @@ LIQUID_STOCKS = [
     "WEGE3.SA",
     "RENT3.SA",
     "LREN3.SA",
-    "SUZB3.SA",
-    "RADL3.SA",
-    "RAIL3.SA",
-    "SBSP3.SA",
-    "SANB11.SA",
-    "HAPV3.SA",
-    "EGIE3.SA",
-    "ELET3.SA",
-    "CPFE3.SA",
-    "CMIG4.SA",
-    "TAEE11.SA"
+    "SUZB3.SA"
 ]
 
 def run_scanner(max_results=10):
-    """
-    Scanner completo com score e fundamentos
-    """
     results = []
     
-    for idx, ticker in enumerate(LIQUID_STOCKS):
+    for ticker in LIQUID_STOCKS[:max_results]:
         try:
             df = get_stock_data(ticker)
             
-            if df is None or len(df) < 100:
+            if df is None or len(df) < 50:
                 continue
             
-            # Filtro de volume
-            volume_medio = df["Volume"].tail(20).mean()
-            if volume_medio < 200_000:
-                continue
-            
-            # Adiciona indicadores
             df = add_indicators(df)
-            
-            # Busca fundamentos
             fundamentals = get_fundamentals(ticker)
-            
-            # Calcula score
             score = calculate_score(df, fundamentals)
-            
-            # Preço atual
-            preco_atual = float(df["Close"].iloc[-1])
-            
-            # Calcula distância da EMA21
-            ema21 = float(df["EMA21"].iloc[-1])
-            dist_ema21 = ((preco_atual - ema21) / ema21) * 100
             
             results.append({
                 "Ticker": ticker,
-                "Preço": round(preco_atual, 2),
-                "Score": score,
-                "Volume Médio": int(volume_medio),
-                "Dist. EMA21 (%)": round(dist_ema21, 2),
-                "PVP": round(fundamentals.get("pvp", 0), 2) if fundamentals and fundamentals.get("pvp") else None,
-                "PL": round(fundamentals.get("pl", 0), 2) if fundamentals and fundamentals.get("pl") else None
+                "Preço": round(float(df["Close"].iloc[-1]), 2),
+                "Score": score
             })
-            
-        except Exception as e:
-            print(f"Erro em {ticker}: {e}")
+        except:
             continue
     
     if not results:
-        return pd.DataFrame({"Mensagem": ["Nenhuma ação passou nos filtros."]})
+        return pd.DataFrame({"Mensagem": ["Nenhuma ação encontrada."]})
     
-    # Ordena por score
-    df_results = pd.DataFrame(results)
-    df_results = df_results.sort_values(by="Score", ascending=False)
-    
-    return df_results.head(max_results).reset_index(drop=True)
+    return pd.DataFrame(results).sort_values("Score", ascending=False)
