@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+import pandas as pd
+
+from data_collector import get_stock_data, get_fundamentals
+from indicators import add_indicators
+from scoring import calculate_score
+
+
 TICKERS = [
     "PETR4.SA", "VALE3.SA", "ITUB4.SA", "BBDC4.SA", "ABEV3.SA",
     "BBAS3.SA", "WEGE3.SA", "BPAC11.SA", "RENT3.SA", "PRIO3.SA",
@@ -47,3 +56,4 @@ def run_scanner():
     ranking = ranking.sort_values(by="Score", ascending=False).reset_index(drop=True)
 
     return ranking.head(10)
+
