@@ -1,34 +1,16 @@
+# -*- coding: utf-8 -*-
+
+import yfinance as yf
+import pandas as pd
+
+
 def get_stock_data(ticker):
 
-    import yfinance as yf
-    import pandas as pd
-
     try:
-        df = yf.download(
-            ticker,
-            period="6mo",
-            interval="1d",
-            auto_adjust=True,
-            progress=False
-        )
+        df = yf.download(ticker, period="1y", interval="1d", progress=False)
 
-        if df.empty:
+        if df is None or df.empty:
             return None
-
-        # Remove MultiIndex se existir
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
-
-        # Padroniza nomes das colunas
-        df.columns = [col.capitalize() for col in df.columns]
-
-        # Garante que exista coluna Close
-        if "Close" not in df.columns:
-            return None
-
-        # Converte tudo para número (evita erro str - str)
-        for col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
 
         df = df.dropna()
 
@@ -36,3 +18,21 @@ def get_stock_data(ticker):
 
     except Exception:
         return None
+
+
+def get_fundamentals(ticker):
+
+    try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+
+        fundamentals = {
+            "pvp": info.get("priceToBook", None),
+            "pl": info.get("trailingPE", None),
+            "roe": info.get("returnOnEquity", None),
+        }
+
+        return fundamentals
+
+    except Exception:
+        return {}
