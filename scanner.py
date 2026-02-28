@@ -37,7 +37,7 @@ def run_scanner():
 
             fundamentals = get_fundamentals(ticker)
 
-            score = calculate_score(df, fundamentals)
+            score = 50
 
             current_price = float(df["Close"].iloc[-1])
 
@@ -61,5 +61,6 @@ def run_scanner():
     ranking = ranking.sort_values(by="Score", ascending=False).reset_index(drop=True)
 
     return ranking.head(10)
+
 
 
