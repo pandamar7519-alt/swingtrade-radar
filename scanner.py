@@ -21,30 +21,30 @@ def run_scanner():
         try:
             df = get_stock_data(ticker)
 
-            if df is None or len(df) < 100:
+            if df is None:
+                print(ticker, "→ df é None")
                 continue
 
-            df = add_indicators(df)
+            print(ticker, "→ Linhas:", len(df))
+
+            if len(df) < 100:
+                print(ticker, "→ Reprovado por histórico")
+                continue
 
             volume_medio = df["Volume"].tail(20).mean()
+            print(ticker, "→ Volume médio:", volume_medio)
 
             if volume_medio < 200_000:
+                print(ticker, "→ Reprovado por volume")
                 continue
-
-            fundamentals = get_fundamentals(ticker)
-
-            score = calculate_score(df, fundamentals)
-
-            current_price = float(df["Close"].iloc[-1])
 
             results.append({
                 "Ticker": ticker,
-                "Preço Atual": round(current_price, 2),
-                "Volume Médio 20d": int(volume_medio),
-                "Score": round(score, 2)
+                "Preço Atual": float(df["Close"].iloc[-1])
             })
 
-        except Exception:
+        except Exception as e:
+            print(ticker, "→ ERRO:", e)
             continue
 
     if len(results) == 0:
@@ -52,8 +52,4 @@ def run_scanner():
             {"Mensagem": ["Nenhuma ação passou nos filtros."]}
         )
 
-    ranking = pd.DataFrame(results)
-    ranking = ranking.sort_values(by="Score", ascending=False).reset_index(drop=True)
-
-    return ranking.head(10)
-
+    return pd.DataFrame(results)
