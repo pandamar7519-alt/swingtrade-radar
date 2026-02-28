@@ -1,5 +1,5 @@
 import streamlit as st
-from data_collector import get_stock_data, get_fundamentals
+from data_collector import get_stock_data
 from indicators import add_indicators
 from scoring import calculate_score
 from backtester import backtest
@@ -34,4 +34,5 @@ if st.button("Analisar"):
 if st.button("Rodar Scanner"):
     ranking = run_scanner()
     st.dataframe(ranking)
+
 
