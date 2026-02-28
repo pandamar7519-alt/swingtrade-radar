@@ -9,6 +9,10 @@ def backtest(df, initial_capital=10000):
     try:
         df = df.copy()
         
+        # Verifica colunas necessárias
+        if "EMA9" not in df.columns or "EMA21" not in df.columns:
+            return {"retorno": 0, "sharpe": 0, "max_drawdown": 0, "trades": 0}
+        
         # Sinal de compra: EMA9 > EMA21
         df["Signal"] = 0
         df.loc[df["EMA9"] > df["EMA21"], "Signal"] = 1
@@ -23,13 +27,16 @@ def backtest(df, initial_capital=10000):
         df = df.dropna()
         
         if len(df) == 0:
-            return {"retorno": 0, "sharpe": 0, "max_drawdown": 0}
+            return {"retorno": 0, "sharpe": 0, "max_drawdown": 0, "trades": 0}
         
         # Retorno acumulado
         cumulative_return = (1 + df["Strategy_Returns"]).cumprod().iloc[-1] - 1
         
         # Sharpe Ratio (anualizado)
-        sharpe = np.sqrt(252) * df["Strategy_Returns"].mean() / df["Strategy_Returns"].std() if df["Strategy_Returns"].std() != 0 else 0
+        if df["Strategy_Returns"].std() != 0:
+            sharpe = np.sqrt(252) * df["Strategy_Returns"].mean() / df["Strategy_Returns"].std()
+        else:
+            sharpe = 0
         
         # Max Drawdown
         cumulative = (1 + df["Strategy_Returns"]).cumprod()
