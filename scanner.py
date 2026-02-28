@@ -6,17 +6,14 @@ from universe import LIQUID_STOCKS
 
 
 def run_scanner():
-
     results = []
 
     for ticker in LIQUID_STOCKS:
-
         try:
             df = get_stock_data(ticker)
 
             if df is None or df.empty:
-                print(f"{ticker} retornou vazio")
-                continue
+                raise ValueError("DataFrame vazio")
 
             df = add_indicators(df)
 
@@ -28,13 +25,12 @@ def run_scanner():
                 "Score": score
             })
 
-         except Exception as e:
-             results.append({
-                 "Ticker": ticker,
-                 "Preço Atual": "Erro",
-                 "Score": f"Erro: {str(e)}"
-             })
-             continue
+        except Exception as e:
+            results.append({
+                "Ticker": ticker,
+                "Preço Atual": "Erro",
+                "Score": str(e)
+            })
 
     if len(results) == 0:
         return pd.DataFrame({
@@ -42,7 +38,4 @@ def run_scanner():
         })
 
     ranking = pd.DataFrame(results)
-    ranking = ranking.sort_values(by="Score", ascending=False)
-
-    return ranking.head(10)
-
+    return ranking
