@@ -1,9 +1,9 @@
-from scanner import run_scanner
 import streamlit as st
 from data_collector import get_stock_data, get_fundamentals
 from indicators import add_indicators
 from scoring import calculate_score
 from backtester import backtest
+from scanner import run_scanner
 
 st.title("📊 SwingTrade Radar B3")
 
@@ -29,3 +29,9 @@ if st.button("Analisar"):
     else:
 
         st.error("Ação acima de R$20 ou sem dados.")
+        st.header("Scanner Automático B3 - Top 10")
+
+if st.button("Rodar Scanner"):
+    ranking = run_scanner()
+    st.dataframe(ranking)
+
