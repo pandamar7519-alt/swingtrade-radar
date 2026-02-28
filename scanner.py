@@ -1,4 +1,4 @@
-﻿import pandas as pd
+import pandas as pd
 from data_collector import get_stock_data
 from indicators import add_indicators
 from scoring import calculate_score
@@ -10,18 +10,26 @@ def run_scanner():
     for ticker in LIQUID_STOCKS:
         try:
             df = get_stock_data(ticker)
+
+            if df is None or df.empty:
+                continue
+
             df = add_indicators(df)
 
             score = calculate_score(df)
 
             results.append({
                 "Ticker": ticker,
-                "Preço Atual": round(df["Close"].iloc[-1],2),
+                "Preço Atual": round(df["Close"].iloc[-1], 2),
                 "Score": score
             })
 
         except Exception:
             continue
+
+    # 🔥 proteção contra lista vazia
+    if len(results) == 0:
+        return pd.DataFrame({"Mensagem": ["Nenhuma ação pôde ser analisada."]})
 
     ranking = pd.DataFrame(results)
     ranking = ranking.sort_values(by="Score", ascending=False)
