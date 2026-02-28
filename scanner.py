@@ -1,3 +1,8 @@
+TICKERS = [
+    "PETR4.SA", "VALE3.SA", "ITUB4.SA", "BBDC4.SA", "ABEV3.SA",
+    "BBAS3.SA", "WEGE3.SA", "BPAC11.SA", "RENT3.SA", "PRIO3.SA",
+    "SUZB3.SA", "HAPV3.SA", "EQTL3.SA", "GGBR4.SA", "JBSS3.SA"
+]
 def run_scanner():
 
     import yfinance as yf
@@ -29,3 +34,4 @@ def run_scanner():
         )
 
     return pd.DataFrame(results)
+
