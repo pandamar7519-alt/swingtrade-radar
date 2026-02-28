@@ -12,7 +12,11 @@ def get_stock_data(ticker):
         if df is None or df.empty:
             return None
 
-        df = df.dropna()
+        # Mantém apenas colunas essenciais
+        df = df[["Open", "High", "Low", "Close", "Volume"]]
+
+        # Remove apenas linhas onde Close é nulo
+        df = df[df["Close"].notna()]
 
         return df
 
@@ -36,3 +40,4 @@ def get_fundamentals(ticker):
 
     except Exception:
         return {}
+
