@@ -9,15 +9,26 @@ def get_stock_data(ticker):
             ticker,
             period="6mo",
             interval="1d",
+            auto_adjust=True,
             progress=False
         )
 
         if df.empty:
             return None
 
-        # Se vier MultiIndex, normaliza
+        # Normaliza MultiIndex
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = df.columns.get_level_values(0)
+
+        # Padroniza nomes
+        df.columns = [col.capitalize() for col in df.columns]
+
+        # Garante que Close exista
+        if "Close" not in df.columns:
+            if "Adj close" in df.columns:
+                df["Close"] = df["Adj close"]
+            else:
+                return None
 
         df = df.dropna()
 
