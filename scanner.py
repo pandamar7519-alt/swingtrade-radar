@@ -3,15 +3,38 @@ import pandas as pd
 from data_collector import get_stock_data, get_fundamentals
 from indicators import add_indicators
 from scoring import calculate_score
-from universe import LIQUID_STOCKS  # ✅ Usa a lista do universe.py
 
-def run_scanner(max_results=20):
+# Lista reduzida para evitar timeout no Streamlit Cloud
+LIQUID_STOCKS = [
+    "PETR4.SA",
+    "VALE3.SA",
+    "ITUB4.SA",
+    "BBDC4.SA",
+    "ABEV3.SA",
+    "BBAS3.SA",
+    "WEGE3.SA",
+    "RENT3.SA",
+    "LREN3.SA",
+    "SUZB3.SA",
+    "RADL3.SA",
+    "RAIL3.SA",
+    "SBSP3.SA",
+    "SANB11.SA",
+    "HAPV3.SA",
+    "EGIE3.SA",
+    "ELET3.SA",
+    "CPFE3.SA",
+    "CMIG4.SA",
+    "TAEE11.SA"
+]
+
+def run_scanner(max_results=10):
     """
     Scanner completo com score e fundamentos
     """
     results = []
     
-    for ticker in LIQUID_STOCKS:  # ✅ Usa lista completa
+    for idx, ticker in enumerate(LIQUID_STOCKS):
         try:
             df = get_stock_data(ticker)
             
@@ -45,8 +68,8 @@ def run_scanner(max_results=20):
                 "Score": score,
                 "Volume Médio": int(volume_medio),
                 "Dist. EMA21 (%)": round(dist_ema21, 2),
-                "PVP": round(fundamentals.get("pvp", 0), 2) if fundamentals else None,
-                "PL": round(fundamentals.get("pl", 0), 2) if fundamentals else None
+                "PVP": round(fundamentals.get("pvp", 0), 2) if fundamentals and fundamentals.get("pvp") else None,
+                "PL": round(fundamentals.get("pl", 0), 2) if fundamentals and fundamentals.get("pl") else None
             })
             
         except Exception as e:
