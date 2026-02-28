@@ -32,7 +32,7 @@ def run_scanner():
             # 🔹 Filtro 2 — Volume médio mínimo (20 dias)
             volume_medio = df["Volume"].tail(20).mean()
 
-            if volume_medio < 1_000_000:
+          if volume_medio < 200_000:
                 continue
 
             fundamentals = get_fundamentals(ticker)
@@ -61,3 +61,4 @@ def run_scanner():
     ranking = ranking.sort_values(by="Score", ascending=False).reset_index(drop=True)
 
     return ranking.head(10)
+
